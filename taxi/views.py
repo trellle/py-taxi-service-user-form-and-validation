@@ -3,8 +3,9 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from taxi.forms import DriverLicenseUpdateForm, DriverCreateForm, CarForm
 from .models import Driver, Car, Manufacturer
+from django.shortcuts import redirect
 
 
 @login_required
@@ -61,11 +62,19 @@ class CarListView(LoginRequiredMixin, generic.ListView):
 class CarDetailView(LoginRequiredMixin, generic.DetailView):
     model = Car
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        car = self.get_object()
+        driver = Driver.objects.get(username=self.request.user.username)
+        context["is_driver"] = (car.drivers.
+                                filter(username=driver.username).exists())
+        return context
+
 
 class CarCreateView(LoginRequiredMixin, generic.CreateView):
     model = Car
-    fields = "__all__"
     success_url = reverse_lazy("taxi:car-list")
+    form_class = CarForm
 
 
 class CarUpdateView(LoginRequiredMixin, generic.UpdateView):
@@ -91,14 +100,29 @@ class DriverDetailView(LoginRequiredMixin, generic.DetailView):
 
 class DriverCreateView(LoginRequiredMixin, generic.CreateView):
     model = Driver
-    fields = ["username", "license_number", "password", "first_name", "last_name", "email"]
-
-
-class DriverUpdateView(LoginRequiredMixin, generic.UpdateView):
-    model = Driver
-    fields = ["username", "license_number", "password", "first_name", "last_name", "email"]
+    success_url = reverse_lazy("taxi:driver-list")
+    form_class = DriverCreateForm
 
 
 class DriverDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Driver
     fields = ["license_number"]
+    success_url = reverse_lazy("taxi:driver-list")
+
+
+class DriverUpdateView(LoginRequiredMixin, generic.UpdateView):
+    model = Driver
+    success_url = reverse_lazy("taxi:driver-list")
+    form_class = DriverLicenseUpdateForm
+
+
+class UpdateUserCarView(generic.View):
+    def post(self, request, pk, action):
+        car = Car.objects.get(id=pk)
+        driver = Driver.objects.get(id=request.user.id)
+        if action == "delete":
+            car.drivers.remove(driver)
+        elif action == "assign":
+            car.drivers.add(driver)
+        car.save()
+        return redirect("taxi:car-detail", pk=pk)
