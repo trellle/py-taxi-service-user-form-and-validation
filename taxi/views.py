@@ -66,7 +66,8 @@ class CarDetailView(LoginRequiredMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         car = self.get_object()
-        driver = get_user_model().objects.get(username=self.request.user.username)
+        driver = (get_user_model().objects.
+                  get(username=self.request.user.username))
         context["is_driver"] = (car.drivers.
                                 filter(username=driver.username).exists())
         return context
@@ -96,7 +97,8 @@ class DriverListView(LoginRequiredMixin, generic.ListView):
 
 class DriverDetailView(LoginRequiredMixin, generic.DetailView):
     model = get_user_model()
-    queryset = get_user_model().objects.all().prefetch_related("cars__manufacturer")
+    queryset = (get_user_model().objects.all().
+                prefetch_related("cars__manufacturer"))
 
 
 class DriverCreateView(LoginRequiredMixin, generic.CreateView):
