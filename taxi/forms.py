@@ -25,7 +25,9 @@ class DriverBaseForm(UserCreationForm):
 
 class DriverCreateForm(DriverBaseForm):
     class Meta:
-        fields = DriverBaseForm.Meta.fields + ("username", "password", "first_name", "last_name", "email")
+        fields = DriverBaseForm.Meta.fields + (
+            "username", "password", "first_name", "last_name", "email"
+        )
 
 
 class DriverLicenseUpdateForm(DriverBaseForm):
