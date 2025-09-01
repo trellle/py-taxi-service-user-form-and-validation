@@ -1,10 +1,11 @@
 from django import forms
 from taxi.models import Car
+from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 
-class DriverBaseForm(forms.ModelForm):
+class DriverBaseForm(UserCreationForm):
     class Meta:
         model = get_user_model()
         fields = ("license_number",)
@@ -23,13 +24,13 @@ class DriverBaseForm(forms.ModelForm):
 
 
 class DriverCreateForm(DriverBaseForm):
-    class Meta(DriverBaseForm.Meta):
-        fields = ("username", "password", "first_name", "last_name", "email")
+    class Meta:
+        fields = DriverBaseForm.Meta.fields + ("username", "password", "first_name", "last_name", "email")
 
 
 class DriverLicenseUpdateForm(DriverBaseForm):
-    class Meta(DriverBaseForm.Meta):
-        pass
+    class Meta:
+        fields = DriverBaseForm.Meta.fields
 
 
 class CarForm(forms.ModelForm):
