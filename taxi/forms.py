@@ -5,11 +5,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 
-class DriverBaseForm(UserCreationForm):
-    class Meta:
-        model = get_user_model()
-        fields = ("license_number",)
-
+class DriverBaseForm(forms.ModelForm):
     def clean_license_number(self):
         license_number = self.cleaned_data["license_number"]
         if len(license_number) != 8:
@@ -23,16 +19,23 @@ class DriverBaseForm(UserCreationForm):
         return license_number
 
 
-class DriverCreateForm(DriverBaseForm):
-    class Meta:
-        fields = DriverBaseForm.Meta.fields + (
-            "username", "password", "first_name", "last_name", "email"
+class DriverCreateForm(UserCreationForm, DriverBaseForm):
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model()
+        fields = (
+            "license_number",
+            "username",
+            "password",
+            "first_name",
+            "last_name",
+            "email"
         )
 
 
 class DriverLicenseUpdateForm(DriverBaseForm):
     class Meta:
-        fields = DriverBaseForm.Meta.fields
+        model = get_user_model()
+        fields = ("license_number",)
 
 
 class CarForm(forms.ModelForm):
